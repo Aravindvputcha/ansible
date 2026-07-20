@@ -1,0 +1,34 @@
+---
+# Write your playbook below.
+# Replace these contents with the tasks you'd like to complete and the modules you need.
+# For help getting started, check out https://www.redhat.com/en/topics/automation/what-is-an-ansible-playbook
+
+- name: Example Playbook
+  hosts: all
+  become: yes
+  tasks:
+    - name: Gather package facts
+      package_facts:
+        manager: auto
+
+    - name: Ensure Apache2 and php  is installed
+      yum:
+        name:
+          - httpd
+          - php
+        state: absent
+      when: ansible_distribution == "CentOS" or ansible_distribution == 'RedHat'
+
+    - name: Start and enable Apache service
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+      when: "'httpd' in ansible_facts.packages"
+  
+
+    - name: Create a simple HTML file
+      copy:
+        dest: /var/www/html/index.html
+        content: "<html><body><h1>Hello, Ansible!</h1></body></html>"
+      when: "'httpd' in ansible_facts.packages"

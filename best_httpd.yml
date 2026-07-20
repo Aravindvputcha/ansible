@@ -1,0 +1,33 @@
+---
+- name: Example Playbook
+  hosts: all
+  become: yes
+
+  vars:
+    httpd_state: absent   # change to present when installing
+
+  tasks:
+    - name: Manage Apache and PHP
+      yum:
+        name:
+          - httpd
+          - php
+        state: "{{ httpd_state }}"
+      when: ansible_distribution in ["CentOS", "RedHat"]
+
+    - name: Start and enable Apache service
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+      when:
+        - ansible_distribution in ["CentOS", "RedHat"]
+        - httpd_state == "present"
+
+    - name: Create a simple HTML file
+      copy:
+        dest: /var/www/html/index.html
+        content: "<html><body><h1>Hello, Ansible!</h1></body></html>"
+      when:
+        - ansible_distribution in ["CentOS", "RedHat"]
+        - httpd_state == "present"
