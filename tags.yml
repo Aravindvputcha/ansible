@@ -1,0 +1,103 @@
+---
+# Playbook with tags and when conditions for Ubuntu and CentOS
+
+- name: Install and configure Apache based on OS
+  hosts: all
+  become: yes
+  tasks:
+
+    # ─── Package Installation ───────────────────────────────────────────────
+
+    - name: Ensure Apache is installed on CentOS
+      yum:
+        name: httpd
+        state: present
+      when: ansible_facts['os_family'] == "RedHat"
+      tags:
+        - apache
+        - install
+        - centos
+
+    - name: Ensure Apache is installed on Ubuntu
+      apt:
+        name: apache2
+        state: present
+        update_cache: yes
+      when: ansible_facts['os_family'] == "Debian"
+      tags:
+        - apache
+        - install
+        - ubuntu
+
+    # ─── Service Management ─────────────────────────────────────────────────
+
+    - name: Start and enable Apache service on CentOS
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+      when: ansible_facts['os_family'] == "RedHat"
+      tags:
+        - apache
+        - service
+        - centos
+
+    - name: Start and enable Apache service on Ubuntu
+      service:
+        name: apache2
+        state: started
+        enabled: yes
+      when: ansible_facts['os_family'] == "Debian"
+      tags:
+        - apache
+        - service
+        - ubuntu
+
+    # ─── Web Content ────────────────────────────────────────────────────────
+
+    - name: Deploy HTML file on CentOS
+      copy:
+        dest: /var/www/html/index.html
+        content: "<html><body><h1>Hello from CentOS!</h1></body></html>"
+        owner: apache
+        group: apache
+        mode: '0644'
+      when: ansible_facts['os_family'] == "RedHat"
+      tags:
+        - content
+        - centos
+
+    - name: Deploy HTML file on Ubuntu
+      copy:
+        dest: /var/www/html/index.html
+        content: "<html><body><h1>Hello from Ubuntu!</h1></body></html>"
+        owner: www-data
+        group: www-data
+        mode: '0644'
+      when: ansible_facts['os_family'] == "Debian"
+      tags:
+        - content
+        - ubuntu
+
+    # ─── Firewall ───────────────────────────────────────────────────────────
+
+
+    - name: Open HTTP port on CentOS (firewalld)
+      shell: |
+        firewall-cmd --permanent --add-service=http
+        firewall-cmd --reload
+      when: ansible_facts['os_family'] == "RedHat"
+      tags:
+        - firewall
+        - centos
+
+          
+    - name: Open HTTP port on Ubuntu (ufw)
+      shell: |
+        ufw allow 80/tcp
+        ufw reload
+      when: ansible_facts['os_family'] == "Debian"
+      tags:
+        - firewall
+        - ubuntu
+
