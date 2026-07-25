@@ -1,2 +1,5 @@
+[web_servers]
 TestHadoop1
+
+[db_servers]
 TestHadoop2
